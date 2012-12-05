@@ -21,6 +21,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\CodeJam.XML</DocumentationFile>
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\Program Files (x86)\NUnit 2.6.1\bin\nunit-x86.exe</StartProgram>
+    <StartArguments>CodeJam.dll</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -35,13 +38,18 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <ItemGroup>
     <Compile Include="CodeJamUtils.fs" />
-    <Compile Include="CodeJam2011.fs" />
+    <Compile Include="CodeJam2009QR.fs" />
+    <Compile Include="CodeJam2010QR.fs" />
+    <Compile Include="CodeJam2011QRafrica.fs" />
+    <Compile Include="CodeJam2011QR.fs" />
+    <Compile Include="CodeJam2011R1A.fs" />
     <Compile Include="CodeJam2012.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
+    <Reference Include="nunit.framework, Version=2.6.1.12217, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
