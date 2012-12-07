@@ -29,7 +29,34 @@ let H,F,C = CodeJam.Tide.toCase
 CodeJam.Tide.shortest H F C
 
 CodeJam.Tide.solve "tide-small.in"
+CodeJam.Tide.solve "tide-large.in"
 
+
+CodeJam.Tide.test "200 1 2
+          250 233
+          180 100" 11.7 
+
+    test "100 3 3
+        500 500 500
+        500 500 600
+        500 140 1000
+        10 10 10
+        10 10 490
+        10 10 10" 3.0
+
+    test "100 3 3
+        500 100 500
+        100 100 500
+        500 500 500
+        10 10 10
+        10 10 10
+        10 10 10" 18.0
+
+    test "100 2 2
+        1000 1000
+        1000 1000
+        100 900
+        900 100" 0.0
 
 
 

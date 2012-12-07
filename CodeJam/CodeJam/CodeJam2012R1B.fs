@@ -62,55 +62,49 @@ module Tide =
                             x >= 0 && x < N && y >= 0 && y < M)
             for (x,y) in cells do
                 let md = 50.0 // minimum height
-                let pc = max w F.[x,y]
                 // check if we can move
-                if pc + md <= C.[x,y] + 0.01 && // target has enough height
-                   p  + md <= C.[x,y] + 0.01 && // we can slide without bumping the head
-                   pc + md <= C.[i,j] + 0.01    // it's not just a peekhole at head level
-                then
-                    // see if we are still at zero time, in which case we can just move without any cost
-                    if t = 0.0 then
-                        yield t, (x,y), pc
-                    else 
-                        // time to move is 1sec if we have at least 20cm of water othewise 10sec
-                        let dt = if w >= F.[i,j] + 20.0 then 1.0 else 10.0
-                        let wc = w - dt * speed
-                        let pc = max wc F.[x,y]
-                        yield t + dt, (x,y), pc 
-            // if we are still in water we can reach a 1cm less potential by waiting 0.1 seconds
-            if w > F.[i,j] then
-                let d = 1.0 // drop 1cm
-                yield t + d/speed, (i,j), (p - d)                
+                if F.[x,y] + md <= C.[x,y] + 0.01 && // target has enough height
+                   F.[i,j] + md <= C.[x,y] + 0.01 &&
+                   F.[x,y] + md <= C.[i,j] + 0.01 then
+                    if p + md <= C.[x,y] + 0.01 then // we can slide without bumping the head
+                        // see if we are still at zero time, in which case we can just move without any cost
+                        if t = 0.0 then
+                            yield t, (x,y)
+                        else 
+                            // time to move is 1sec if we have at least 20cm of water othewise 10sec
+                            let dt = if w >= F.[i,j] + 20.0 then 1.0 else 10.0
+                            yield t + dt, (x,y)   
+                    else // we have to wait because the next room has too much water in it
+                        let pc = max w F.[x,y] // now
+                        let pt = C.[x,y] - md // target
+                        let dt = (pc - pt) / speed // time to wait
+                        let t' = t + dt
+                        let w' = max 0.0 (H - (t' * speed))
+                        let dt' = if w' >= F.[i,j] + 20.0 then 1.0 else 10.0
+                        yield t' + dt', (x,y)            
         }
 
         // loop to implement Dijkstra
-        let rec loop V Q = 
+        let rec loop Q = 
             // get the closest tile with it's water level
-            let (t, (i,j), (p:float)) as s = Q |> Set.minElement
+            let (t, (i,j)) as s = Q |> Set.minElement
             let Q = Q |> Set.remove s
-            // to prevent visiting a place more than once
-            let pos = (i,j), p
             // see where we are
             if (i,j) = target then
                 S.[i,j] <- Some(t)
                 S
-            else 
-                // this is the shortest path to i,j, on a given potential. now let's see where we can go from here
-                if not(S.[i,j].IsSome) then
-                    S.[i,j] <- Some(t) // first time we entered this square
-                let next = moves t (i,j) |> Seq.filter (fun (_, (i,j), p) ->
-                                                not(V |> Set.contains ((i,j), p)))
-                                         |> List.ofSeq
+            elif S.[i,j].IsSome then
+                loop Q
+            else // first time we entered this square
+                S.[i,j] <- Some(t) 
+                let next = moves t (i,j) |> List.ofSeq
                 //printfn "%.1f: %A (%.0f) -> %A" t (i,j) p next
                 let Q = Set.union Q (next |> Set.ofSeq) 
-                let V = V |> Set.add pos
-                loop V Q
+                loop Q
 
         // start from the upper corner, where we are
-        let p = max H F.[0,0]
-        let Q = Set.singleton (0.0, start, p)
-        let V = Set.empty
-        loop V Q
+        let Q = Set.singleton (0.0, start)
+        loop Q
                 
 
     let toCase lines = 
@@ -166,5 +160,8 @@ module Tide =
                                     2 * (int (pline.Split([|' '|]).[1]))))
         solver fn (solveCase >> (sprintf "%.1f"))
 
+
+    // CodeJam.Tide.solve "tide-small.in"
+    // CodeJam.Tide.solve "tide-large.in"
 
 
