@@ -64,7 +64,7 @@ module Utils =
                 Path.Combine(__SOURCE_DIRECTORY__, "data", fn)
 
         let splitLines (s: string) = s.Split([|'\n'|])
-        let splitSpaces (s: string) = s.Split([|' '|])
+        let splitSpaces (s: string) = s.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
         let joinSpaces (s: string[]) = String.Join(" ", s)
 
         // in most problems the cases come line by line  
