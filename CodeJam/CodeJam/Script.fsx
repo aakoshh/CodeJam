@@ -4,10 +4,13 @@
 # nowarn "40"
 #load "CodeJam2012R1B.fs"
 
+fsi.AddPrinter (fun (x: bigint) -> sprintf "%AI" x)
+
 open CodeJam.Utils
 
 //CodeJam.SafetyInNumbers.solve "box-factory-small.in" |> printfn "%s"
 
+CodeJam.EqualSums.solve "equal-sums-small.in"
                 
 let H,F,C = CodeJam.Tide.toCase 
                 "405 7 10
