@@ -66,6 +66,7 @@ module Utils =
         let splitLines (s: string) = s.Split([|'\n'|])
         let splitSpaces (s: string) = s.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
         let joinSpaces (s: string[]) = String.Join(" ", s)
+        let joinLines (s: string[]) = String.Join("\n", s)
 
         // in most problems the cases come line by line  
         let caseByOne (lines: seq<string>) = lines

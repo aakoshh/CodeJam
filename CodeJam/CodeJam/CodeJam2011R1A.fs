@@ -67,3 +67,112 @@ module FreeCell =
     //solve "freecell-small-practice.in"
     //solve "freecell-large-practice.in"
 
+
+
+
+module KillerWord = 
+    
+    /// try a character and substitute into the array (by mutation)
+    let guess (solution: char[]) (mystery: Option<char>[]) c = 
+        let n = Array.length solution
+        let mutable success = false
+        for i in 0 .. n-1 do
+            if solution.[i] = c then
+                success <- true
+                mystery.[i] <- Some(c)
+        success, mystery
+
+    /// eliminate choices from the dictionary if they don't fit the current facts
+    let eliminate (D: Set<char[]>) (mystery: Option<char>[]) (wrong: Set<char>) = 
+        let n = Array.length mystery
+        // filter the dictionary
+        D |> Set.filter (fun d ->
+            // length must be the same
+            let nd = Array.length d
+            n = nd && Array.forall2 (fun dc mc -> 
+                // and every guessed character has to match, or if not fixed then must not be in previous guesses
+                match mc with 
+                | None -> wrong |> Set.contains dc |> not
+                | Some(c) -> dc = c
+                ) d mystery )
+    
+
+    /// work out the points of a solution to a word using a dictionary and a list of characters
+    let hangman (word: string) words guesses = 
+        let solution = word |> Array.ofSeq
+        let mystery = solution |> Array.map (fun _ -> None)
+        let solved () = 
+            mystery |> Array.exists (fun x -> x.IsNone) |> not
+        let rec loop words guesses wrong score = 
+            match guesses with 
+            | c::rest ->
+                // see if the character is in any of the words
+                let viable = words |> Set.exists (Array.exists ((=) c))
+                if viable then
+                    // guessing mutates the mystery
+                    match guess solution mystery c with
+                    | true, mystery -> 
+                        if solved() then
+                            score
+                        else
+                            let words' = eliminate words mystery wrong
+                            loop words' rest wrong score
+                    | false, mystery ->
+                        // didn't substitute any characters
+                        let wrong' = wrong |> Set.add c
+                        let words' = eliminate words mystery wrong'
+                        loop words' rest wrong' (score-1)
+                else // this character cannot be used, but that doesn't lower our score
+                    let wrong' = wrong |> Set.add c
+                    loop words rest wrong' score
+            | [] -> // should not happen 
+                failwith (sprintf "Ran out of guesses at %A" mystery)
+        loop words guesses Set.empty 0
+
+
+    /// get the first word that gives the worst score
+    let hardest words guesses = 
+        let score, _, word = 
+            words 
+            |> Set.toSeq 
+            |> Seq.mapi (fun i w -> 
+                let word = new System.String(w)
+                let score = hangman word words guesses
+                score, i, word)
+            |> Seq.minBy (fun (s,i,w) -> (s,i))
+        word
+    
+
+    let test() = 
+        let D = ["banana";"caravan";"pajamas"] |> List.map Array.ofSeq |> Set.ofList
+        let L = "abcdefghijklmnopqrstuvwxyz" |> List.ofSeq
+        let score = hangman "pajamas" D L
+        assertEqual score -1 "killerword"
+        let hard = hardest D L
+        assertEqual hard "pajamas"
+
+
+    /// transform a block of strings to the dictionary and guesses
+    let toCase lines = 
+        let ls = lines |> splitLines
+        let [|N; M|] = ls.[0] |> (splitSpaces >> Array.map int)
+        let D = ls.[1..N] |> Array.map Array.ofSeq |> Set.ofArray
+        let L = ls.[(N+1)..] |> Array.map List.ofSeq
+        D, L
+
+
+    let solve fn = 
+        // create solver that reads N + M lines
+        let solver = 
+            solveFileBy (caseByDynWithHeader (fun pline -> // the header line tells that an H x W matrix follows
+                let [|N;M|] = pline.Split([|' '|]) |> Array.map int
+                N + M ))
+
+        solver fn (fun lines -> 
+            let D,Ls = lines |> toCase
+            // output all words on the same line
+            let solutions = Ls |> Array.map (fun L -> hardest D L) |> joinSpaces
+            solutions)
+
+
+            
