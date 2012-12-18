@@ -165,3 +165,97 @@ module Tide =
     // CodeJam.Tide.solve "tide-large.in"
 
 
+
+module EqualSums = 
+
+    /// signal the first sum that is found in two different ways
+    exception DoublePath of (bigint*bigint) * Map<bigint,bigint>
+
+    /// add a number to each element of a set and remember the parent
+    let add (i: bigint) P = 
+        // for every sum in the current mapping
+        let ns = P |> Map.toSeq |> Seq.map (fun (k,v) -> k) |> List.ofSeq |> List.sort
+        let rec loop ks m = 
+            match ks with 
+            | [] -> m
+            | h::t -> 
+                let s = h + i
+                if Map.containsKey s m then
+                    raise <| DoublePath((s,h), m)
+                else
+                    let m' = m |> Map.add s h
+                    loop t m'
+        loop ns P
+
+    /// trace back the parents of a number till zero
+    let trace (i: bigint) P = 
+        let rec loop i ps = 
+            if i = 0I then
+                ps
+            else
+                // what's the parent of i
+                let p = P |> Map.find i
+                let d = i - p
+                loop p (d::ps)
+        loop i []
+
+    /// add numbers until we find one that has a second parent
+    let partition ns = 
+        let rec loop ns P = 
+            match ns with
+            | [] -> 
+                None // it was impossible to find two subsets
+            | h::t -> 
+                try 
+                    let P' = add h P 
+                    loop t P'
+                with
+                | DoublePath( (s,p), M ) -> 
+                    let p1 = trace s M
+                    let p2 = (trace p M) @ [h]
+                    Some(p1,p2)
+        let P0 = [0I,0I] |> Map.ofSeq
+        loop ns P0
+
+    
+    let P0 = [0I,0I] |> Map.ofSeq
+
+    let check (Some(l1: bigint list, l2: bigint list)) =
+            let s1 = l1 |> List.sum
+            let s2 = l2 |> List.sum
+            assertEqual s1 s2 "sums"
+            let S1 = l1 |> Set.ofList
+            let S2 = l2 |> Set.ofList
+            assertEqual (Set.intersect S1 S2) Set.empty "distinct"
+       
+    assertEqual (P0 |> add 1I |> add 2I |> add 5I) ([0I,0I; 1I,0I; 2I,0I; 3I,1I; 5I,0I; 6I,1I; 7I,2I; 8I,3I] |> Map.ofList) "addparent"
+    assertEqual (P0 |> add 1I |> add 2I |> add 5I |> trace 7I) [2I;5I] "trace"
+
+    let test() = 
+        let t1 = [1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20] |> List.map (fun x -> bigint x) |> partition
+        assertEqual t1 (Some ([1I; 2I], [3I])) "partition"
+        check t1
+
+        let t2 = [120;266;858;1243;1657;1771;2328;2490;2665;2894;3117;4210;4454;4943;5690;6170;7048;7125;9512;960] |> List.map (fun x -> bigint x) |> partition
+        check t2
+        assertEqual t2 (Some ([1243I; 1771I], [120I; 2894I])) "partition"  
+        
+    test()      
+
+
+    let solve fn = 
+        let toLine xs = 
+            xs |> List.map string |> Array.ofList |> joinSpaces
+
+        solveFile fn (fun line -> 
+            let ns = line |> splitSpaces |> List.ofArray |> List.map (fun x -> bigint.Parse(x))
+            match partition (ns |> List.tail) with
+            | Some(l1,l2) -> 
+                sprintf "\n%s\n%s" (l1 |> toLine) (l2 |> toLine)
+            | None -> 
+                "Impossible")
+
+    // CodeJam.EqualSums.solve "equal-sums-sample.in"
+
+
+
