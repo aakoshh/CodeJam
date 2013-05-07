@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CodeJam", "CodeJam\CodeJam.fsproj", "{85B286D3-A8EA-4EBE-B147-D9BA020820A3}"
 EndProject
 Global
