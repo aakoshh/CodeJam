@@ -51,3 +51,48 @@ module TicTacToeTomek =
                 | Won(side) -> sprintf "%c won" side
                 | Draw -> "Draw"
                 | NotCompleted -> "Game has not completed")
+
+    // CodeJam.TicTacToeTomek.solve "tictactoetomek-sample.in"
+
+
+// https://code.google.com/codejam/contest/2270488/dashboard#s=p1
+module Lawnmower = 
+
+    type Direction = Up | Down | Left | Right
+
+    let next dir (r,c) = 
+        match dir with 
+        | Up -> (r-1, c)
+        | Down -> (r+1, c)
+        | Left -> (r, c-1)
+        | Right -> (r, c+1)
+        
+    let check table = 
+        let maxr = (table |> Array2D.length1) - 1
+        let maxc = (table |> Array2D.length2) - 1
+        // we have to be able to go up&down or left&right from every cell not running into higher ground
+        let rec maxh = memoize <| fun (dir, (r,c)) ->
+            if  dir = Up && r = 0 
+                || dir = Down && r = maxr 
+                || dir = Left && c = 0 
+                || dir = Right && c = maxc 
+            then
+                table.[r,c]
+            else 
+                let nr, nc = next dir (r,c)
+                max table.[r,c] (maxh (dir,(nr,nc)))
+        // check every cell that it's possible to get out
+        table |> Array2D.toSeq |> Seq.forall (fun (r,c,v) -> 
+            let h = table.[r,c]
+            maxh (Up, (r,c)) <= h && maxh (Down, (r,c)) <= h || 
+            maxh (Left, (r,c)) <= h && maxh (Right, (r,c)) <= h)
+                
+    let solve fn = 
+        // there is a case every 5 lines
+        solveFileHxW fn <| fun s -> 
+            let table = (splitLines s)
+                        |> Array.map (splitSpaces >> Array.map int)
+                        |> array2D
+            table |> check |> (function true -> "YES" | false -> "NO")
+
+    // CodeJam.Lawnmower.solve "lawnmower-sample.in"
