@@ -9,9 +9,9 @@ fsi.AddPrinter (fun (x: bigint) -> sprintf "%AI" x)
 open CodeJam.Utils
 
 //CodeJam.SafetyInNumbers.solve "box-factory-small.in" |> printfn "%s"           
-CodeJam.Lawnmower.solve "lawnmower-sample.in"
-CodeJam.Lawnmower.solve "lawnmower-small-practice.in"
-CodeJam.Lawnmower.solve "lawnmower-large-practice.in"
+CodeJam.FairAndSquare.solve "fairandsquare-sample.in"
+CodeJam.FairAndSquare.solve "fairandsquare-small-practice.in"
+CodeJam.FairAndSquare.solve "fairandsquare-large-practice-a.in"
 
 
 

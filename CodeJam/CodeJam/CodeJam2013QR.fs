@@ -118,11 +118,18 @@ module FairAndSquare =
             }
         loop 1I
 
+    let getFnS lst a b = 
+        lst |> Seq.filter (fun i -> i >= a && i <= b) 
 
     let solve fn = 
         // there is a case every line
+        // prepare a cached version
+        let M = bigint.Pow(10I, 14) 
+        let cache = fairAndSquares 1I M |> List.ofSeq
+        let count = getFnS cache
+
         solveFile fn <| fun s -> 
             let [|a;b|] = s |>splitSpaces |> Array.map bigint.Parse
-            fairAndSquares a b |> Seq.length |> string
+            count a b |> Seq.length |> string
 
     // CodeJam.FairAndSquare.solve "fairandsquare-sample.in"
