@@ -103,9 +103,15 @@ module Lawnmower =
 module FairAndSquare = 
     
     let isPalindrome n = 
-        let s = string n
-        let r = new String(s |> Array.ofSeq |> Array.rev)
-        s = r
+        let chrs = string n
+        let rec loop i = 
+            if not(chrs.[i].Equals(chrs.[chrs.Length-1-i])) then
+                false
+            elif i = chrs.Length / 2 then
+                true
+            else
+                loop (i+1)
+        loop 0     
 
     let fairAndSquares (a: bigint) (b: bigint) = 
         // go up to the root of B to find palindromes, square them, check again
