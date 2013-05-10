@@ -96,3 +96,33 @@ module Lawnmower =
             table |> check |> (function true -> "YES" | false -> "NO")
 
     // CodeJam.Lawnmower.solve "lawnmower-sample.in"
+
+
+
+// https://code.google.com/codejam/contest/2270488/dashboard#s=p2
+module FairAndSquare = 
+    
+    let isPalindrome n = 
+        let s = string n
+        let r = new String(s |> Array.ofSeq |> Array.rev)
+        s = r
+
+    let fairAndSquares (a: bigint) (b: bigint) = 
+        // go up to the root of B to find palindromes, square them, check again
+        let rec loop i = seq {            
+            let ii = i * i
+            if ii <= b then
+                if ii >= a && isPalindrome i && isPalindrome ii then
+                    yield ii                
+                yield! loop (i+1I)
+            }
+        loop 1I
+
+
+    let solve fn = 
+        // there is a case every line
+        solveFile fn <| fun s -> 
+            let [|a;b|] = s |>splitSpaces |> Array.map bigint.Parse
+            fairAndSquares a b |> Seq.length |> string
+
+    // CodeJam.FairAndSquare.solve "fairandsquare-sample.in"

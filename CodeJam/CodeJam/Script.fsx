@@ -8,10 +8,10 @@ fsi.AddPrinter (fun (x: bigint) -> sprintf "%AI" x)
 
 open CodeJam.Utils
 
-//CodeJam.SafetyInNumbers.solve "box-factory-small.in" |> printfn "%s"
-CodeJam.TicTacToeTomek.solve "tictactoetomek-sample.in"
-CodeJam.TicTacToeTomek.solve "tictactoetomek-small-practice.in"
-            
+//CodeJam.SafetyInNumbers.solve "box-factory-small.in" |> printfn "%s"           
+CodeJam.Lawnmower.solve "lawnmower-sample.in"
+CodeJam.Lawnmower.solve "lawnmower-small-practice.in"
+CodeJam.Lawnmower.solve "lawnmower-large-practice.in"
 
 
 
