@@ -7,9 +7,9 @@
 fsi.AddPrinter (fun (x: bigint) -> sprintf "%AI" x)
 
 open CodeJam.Utils
-
-//CodeJam.SafetyInNumbers.solve "box-factory-small.in" |> printfn "%s"           
+         
 CodeJam.Treasure.solve "treasure-sample.in"
+CodeJam.Treasure.solve "treasure-small-practice.in"
 
 
 

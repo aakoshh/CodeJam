@@ -207,10 +207,11 @@ module Treasure =
                             (i+1, arr.[0], arr.[2 ..] |> Array.toList))
                         |> Array.toList
 
-            let solutions = traverse keys chests 
-                            |> Seq.map (fun solution -> String.Join(" ", solution))
-                            |> Seq.sort |> List.ofSeq
+            let firstSolution = traverse keys chests 
+                                |> Seq.tryFind (fun _ -> true)
 
-            if List.isEmpty solutions then "IMPOSSIBLE" else List.head solutions
+            match firstSolution with    
+                | Some(solution) -> String.Join(" ", solution)
+                | None -> "IMPOSSIBLE"
 
         solveFileBy (caseByDyn getRows) fn solveLines
