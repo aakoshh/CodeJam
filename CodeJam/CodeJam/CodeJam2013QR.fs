@@ -139,3 +139,78 @@ module FairAndSquare =
             count a b |> Seq.length |> string
 
     // CodeJam.FairAndSquare.solve "fairandsquare-sample.in"
+
+
+// https://code.google.com/codejam/contest/2270488/dashboard#s=p3
+module Treasure = 
+
+    let hasKey key keys = 
+        match keys |> Map.tryFind key with
+        | Some(x) when x > 0 -> true
+        | _ -> false
+
+    let addKeys key n keys = 
+        match keys |> Map.tryFind key with
+        | Some(x) -> 
+            keys |> Map.add key (x+n)
+        | _ -> 
+            keys |> Map.add key n
+
+    let removeKey key keys = 
+        match keys |> Map.tryFind key with
+        | Some(x) when x > 0 -> 
+            keys |> Map.add key (x-1)
+        | _ -> 
+            failwith "Cannot remove key %d from %A" key keys
+
+    
+    let traverse (keys: int list) (chests: (int * int * int list) list) =         
+        // chest contents
+        let contents = chests |> Seq.map (fun (id,typ,keys) -> (id, keys)) |> Map.ofSeq
+        // key inventory
+        let keyMap = keys |> Seq.countBy id |> Map.ofSeq
+        // unopened chests
+        let chestMap = chests |> Seq.map (fun (id,typ,keys) -> (id, typ)) |> Set.ofSeq
+
+        // do a DFS on chests
+        let rec loop ord ks cs = seq {
+            if Set.isEmpty cs then
+                yield ord |> List.rev
+            // try to open any chest we have a key for
+            for cid, typ in cs do
+                if ks |> hasKey typ then
+                    let cs' = cs |> Set.remove (cid,typ)
+                    let ks' = ks |> removeKey typ
+                    let ks' = contents.[cid] 
+                                |> Seq.countBy id 
+                                |> Seq.fold (fun keys (k,n) -> keys |> addKeys k n) ks'
+                    yield! loop (cid::ord) ks' cs'
+        }
+        loop [] keyMap chestMap
+
+    let solve fn = 
+        // determine number of lines
+        let getRows header = 
+            let [|K;N|] = header |> splitSpaces |> Array.map int            
+            1 + N 
+
+        let solveLines ls = 
+            let lines = splitLines ls
+
+            // first line is the keys we start with
+            let keys = lines.[0] |> splitSpaces |> Array.map int |> Array.toList
+
+            // other lines are chests: type, number of keys, keys
+            let chests = lines.[1 ..] 
+                        |> Array.map (splitSpaces >> Array.map int)
+                        |> Array.mapi (fun i arr ->
+                            (i+1, arr.[0], arr.[2 ..] |> Array.toList))
+                        |> Array.toList
+
+            let solutions = traverse keys chests 
+                            |> Seq.map (fun solution -> String.Join(" ", solution))
+                            |> Seq.sort |> List.ofSeq
+
+            if List.isEmpty solutions then "IMPOSSIBLE" else List.head solutions
+
+        solveFileBy (caseByDyn getRows) fn solveLines
