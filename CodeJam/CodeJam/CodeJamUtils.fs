@@ -158,3 +158,17 @@ module Utils =
                         | Some(l), _ -> l
                         | _, Some(r) -> r
                         | _ -> 0.0 ) 
+
+
+    module Numerics = 
+        open System
+
+        // try to find the square root of an integer assuming that it will be an integer too
+        let sqrti (i: bigint) = 
+            let rec loop r = 
+                if r * r = i then
+                    r
+                else
+                    let r' = (r + i/r) / 2I
+                    if r = r' then r else loop r'
+            loop 1I
