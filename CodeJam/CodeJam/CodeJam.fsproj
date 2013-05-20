@@ -51,6 +51,8 @@
     <Compile Include="CodeJam2012R1A.fs" />
     <Compile Include="CodeJam2012R1B.fs" />
     <Compile Include="CodeJam2012R1C.fs" />
+    <Compile Include="CodeJam2013QR.fs" />
+    <Compile Include="CodeJam20131A.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
   <ItemGroup>
