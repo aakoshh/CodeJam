@@ -8,8 +8,8 @@ fsi.AddPrinter (fun (x: bigint) -> sprintf "%AI" x)
 
 open CodeJam.Utils
          
-CodeJam.Bullseye.solve "treasure-sample.in"
-CodeJam.Bullseye.solve "treasure-small-practice.in"
+CodeJam.ManageYourEnergy.solve "manageyourenergy-sample.in"
+CodeJam.ManageYourEnergy.solve "manageyourenergy-small-practice.in"
 
 
 

@@ -37,3 +37,41 @@ module Bullseye =
     // CodeJam.Bullseye.solve "bullseye-small-practice.in"
     // CodeJam.Bullseye.solve "bullseye-large-practice.in"
 
+
+// https://code.google.com/codejam/contest/2418487/dashboard#s=p1
+module ManageYourEnergy = 
+
+    // maximum gain
+    let gain E R V = 
+        let maxi = (V |> Array.length) - 1
+        // calculate maximum gain from task i with e energy to spend on them
+        let rec maxgain = memoize <| fun (i, e) -> 
+            // try every spending combination
+            let possibilities = seq {
+                if i = maxi then
+                    yield V.[i] * e, [e]
+                else 
+                    for j in 0L .. e do
+                        // what we gain from this task
+                        let g = V.[i] * j
+                        let e' = min E (e - j + R)
+                        let gr, jr = maxgain (i+1, e')
+                        yield g + gr, j::jr
+            }
+            let plan = possibilities |> Seq.maxBy fst
+            plan
+        let best = maxgain (0, E)
+        // printfn "%A" (snd best)
+        fst best
+
+
+    let solve fn = 
+        solveFile2 fn (fun lines ->
+            let [|l1;l2|] = lines |> splitLines
+            let [|E;R;_|] = l1 |> splitSpaces |> Array.map int64
+            let V = l2 |> splitSpaces |> Array.map int64
+            gain E R V |> string)
+
+
+    // CodeJam.ManageYourEnergy.solve "manageyourenergy-sample.in"
+    // CodeJam.ManageYourEnergy.solve "manageyourenergy-small-practice.in"
