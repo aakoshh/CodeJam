@@ -45,21 +45,28 @@ module ManageYourEnergy =
     let gain E R V = 
         let maxi = (V |> Array.length) - 1
         // calculate maximum gain from task i with e energy to spend on them
-        let rec maxgain = memoize <| fun (i, e) -> 
-            // try every spending combination
-            let possibilities = seq {
-                if i = maxi then
-                    yield V.[i] * e, [e]
-                else 
-                    for j in 0L .. e do
-                        // what we gain from this task
+        let rec maxgain = memoize <| fun (i, e) ->  
+            if i = maxi then
+                V.[i] * e, [e]
+            else                     
+                // find the first point where we lose more from the rest than we gain from this
+                let rec loop j (bg, bj) = 
+                    if j > e then 
+                        bg, bj
+                    else
                         let g = V.[i] * j
                         let e' = min E (e - j + R)
                         let gr, jr = maxgain (i+1, e')
-                        yield g + gr, j::jr
-            }
-            let plan = possibilities |> Seq.maxBy fst
-            plan
+                        if g + gr < bg then
+                            bg, bj
+                        else
+                            loop (j+1L) (g+gr, j::jr)
+
+                // maximum from the rest if we spend 0 here
+                let e' = min E (e + R)
+                let mg, mj = maxgain (i+1, e')
+                loop 1L (mg, 0L::mj)
+
         let best = maxgain (0, E)
         // printfn "%A" (snd best)
         fst best
@@ -75,3 +82,7 @@ module ManageYourEnergy =
 
     // CodeJam.ManageYourEnergy.solve "manageyourenergy-sample.in"
     // CodeJam.ManageYourEnergy.solve "manageyourenergy-small-practice.in"
+
+
+    // gain 9174849L 3990053L [|9029186L;6768994L|]
+    // gain 3646321L 205998L [|9123315L;8377335L;3886394L|]
