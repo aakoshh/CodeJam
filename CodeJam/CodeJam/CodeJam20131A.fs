@@ -115,15 +115,57 @@ module GoodLuck =
             yield Array.init n (fun _ -> rnd.Next(2, m+1) |> int64)
         }   
 
-    // find N random numbers between 2 and M that can explain all products
-    let guess n m ps = 
-        randoms n m 
-            |> Seq.find (fun r ->
-                let ns = r |> Array.toList
-                ps |> Array.forall (isProductOf ns))
+    // generate all unique possibilities
+    let generate N M = 
+        let rec loop n m = seq {
+            if n = 1 then
+                for i in m .. M do
+                    yield [int64 i]
+            else
+                for i in m .. M do                    
+                    for g in loop (n-1) i do
+                        yield (int64 i)::g                    
+        }
+        loop N 2 |> Seq.map Array.ofList
 
-    // guess 3 5 [|9L;4L;36L;1L|]
-    // guess 3 5 [|1L;1L;1L;1L|]
+
+    let rec fact n = if n = 1L then 1L else n * fact(n-1L)
+
+    // number of unique combinations of size k from n different elements with replacement
+    let CWR n k = 
+        // (n + k - 1)! / (k! * (n-1)!)        
+        fact (n+k-1L) / fact k / fact (n-1L)       
+    
+    // assertEqual (CWR (5L-1L) 3L) 20L "CWR"
+    // assertEqual (generate 3 5 |> Seq.length) 20 "generate"
+    
+    // frequency of a given combination in all the possibilities
+    let freq N M (ns: int64[]) = 
+        // all the different variations we can get using 2 .. M in N places = pown ((int64 M)-1L) N
+        // number of ways to arrange N items 
+        let arrangements = fact (int64 N)
+        // we have to cancel the permutations of every digit
+        let digits = ns |> Seq.countBy id
+        let deduplicate  = digits 
+                        |> Seq.map (fun (d, c) -> fact (int64 c)) 
+                        |> Seq.fold (fun p f -> p * f) 1L        
+        arrangements / deduplicate
+
+    // assertEqual (freq 3 5 [3L;3L;3L]) 1L "freq"
+    // assertEqual (freq 3 5 [2L;3L;4L]) 6L "freq"
+
+    // generate the highest probability candidates first
+    let candidates N M = 
+        generate N M |> Seq.sortBy (fun lst -> -(freq N M lst))
+    
+    // find N random numbers between 2 and M that can explain all products
+    let guess cands ps = 
+        cands |> Seq.find (fun r ->
+                    let ns = r |> Array.toList
+                    ps |> Array.forall (isProductOf ns))            
+
+    // guess (randoms 3 5) [|9L;4L;36L;1L|]
+    // guess (randoms 3 5) [|1L;1L;1L;1L|]
 
 
     let solve fn = 
@@ -136,6 +178,8 @@ module GoodLuck =
             let toArr = splitSpaces >> Array.map int64
             let [|R;N;M;K|] = lines.[0] |> toArr
             let cases = lines.[1 ..] |> Array.map toArr
-            let guesses = cases |> Array.map (guess (int N) (int M))
+            // go by the most probable first
+            let cands = candidates (int N) (int M) |> List.ofSeq // (randoms (int N) (int M))
+            let guesses = cases |> Array.map (guess cands)
             // output one big string
             sprintf "\n%s" (guesses |> Array.map (fun guess -> String.Join("", guess)) |> joinLines)
