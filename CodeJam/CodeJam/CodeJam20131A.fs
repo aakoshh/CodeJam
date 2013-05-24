@@ -86,3 +86,56 @@ module ManageYourEnergy =
 
     // gain 9174849L 3990053L [|9029186L;6768994L|]
     // gain 3646321L 205998L [|9123315L;8377335L;3886394L|]
+
+
+// https://code.google.com/codejam/contest/2418487/dashboard#s=p2
+module GoodLuck = 
+
+    // find out if p is a product of any subset of ns
+    let isProductOf ns (p: int64) = 
+        let rec loop ns p = 
+            match ns, p with
+            | _, p when p = 1L -> 
+                true
+            | [], _ -> 
+                false
+            | h::t, p when p % h = 0L ->
+                loop t (p/h) || loop t p
+            | _::t, p -> 
+                loop t p
+        loop ns p
+
+    // [9L;4L;36L;1L] |> List.forall (isProductOf [3L;4L;3L])
+
+    let rnd = new Random()
+
+    // get N random numbers between 2 and M
+    let randoms n m = seq {
+        while true do
+            yield Array.init n (fun _ -> rnd.Next(2, m+1) |> int64)
+        }   
+
+    // find N random numbers between 2 and M that can explain all products
+    let guess n m ps = 
+        randoms n m 
+            |> Seq.find (fun r ->
+                let ns = r |> Array.toList
+                ps |> Array.forall (isProductOf ns))
+
+    // guess 3 5 [|9L;4L;36L;1L|]
+    // guess 3 5 [|1L;1L;1L;1L|]
+
+
+    let solve fn = 
+
+        let partitioner = caseByDynWithHeader (fun line -> 
+            (line |> splitSpaces).[0] |> int)
+
+        solveFileBy partitioner fn <| fun data ->
+            let lines = data |> splitLines
+            let toArr = splitSpaces >> Array.map int64
+            let [|R;N;M;K|] = lines.[0] |> toArr
+            let cases = lines.[1 ..] |> Array.map toArr
+            let guesses = cases |> Array.map (guess (int N) (int M))
+            // output one big string
+            sprintf "\n%s" (guesses |> Array.map (fun guess -> String.Join("", guess)) |> joinLines)
