@@ -10,6 +10,7 @@ open CodeJam.Utils
          
 CodeJam.Osmos.solve "osmos-sample-practice.in"
 CodeJam.Osmos.solve "osmos-small-practice.in"
+CodeJam.Osmos.solve "osmos-large-practice.in"
 
 
 

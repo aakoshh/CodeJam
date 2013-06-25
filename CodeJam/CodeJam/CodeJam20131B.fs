@@ -6,35 +6,36 @@ open System
 // https://code.google.com/codejam/contest/2434486/dashboard#s=p0
 module Osmos = 
 
-    let feed size target = 
-        if size = 1 then 
-            failwith "cannot grow from 1"
+    let feed size target =         
         let rec loop steps size = 
-            if size > target then
-                size, steps
+            if size = 1 then
+                None
+            elif size > target then
+                Some(size, steps)
             else
                 loop (steps+1) (size + size-1)
         loop 0 size
     
     /// Given the initial mote A, calculate how many corrections are needed to absorb the list of motes.
     let moves a motes = 
-        let rec loop corr size motes = 
+        let rec loop corr size motes n = 
             match motes with
             | [] -> 
                 corr
             | h::t when h < size -> 
-                loop corr (size + h) t
+                loop corr (size + h) t (n-1)
             | h::t -> // h >= size
-                // we can either delete, or add the maximum edible mote until we can consume the next                
-                let cd = loop (corr+1) size t
-                if size > 1 then
-                    let fed, steps = feed size h
-                    let cf = loop (corr+steps) fed motes
-                    min cd cf
-                else
-                    cd
+                // we can either delete, or add the maximum edible mote until we can consume the next.
+                // since motes are in order, if we delete one, we can delete all.
+                let deletion = corr + n
+                match feed size h with
+                | Some(size, steps) when (corr+steps) < deletion ->
+                    let rest = loop (corr+steps) size motes n
+                    min deletion rest
+                | _ -> 
+                    deletion
         // consume the smallest first
-        loop 0 a (motes |> List.sort)
+        loop 0 a (motes |> List.sort) (motes |> List.length)
 
 
     let test() = 
