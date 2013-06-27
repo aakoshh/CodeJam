@@ -151,3 +151,81 @@ module FallingDiamonds =
     // CodeJam.FallingDiamonds.solve "fallingdiamonds-sample-practice.in"
     // CodeJam.FallingDiamonds.solve "fallingdiamonds-small-practice.in"
     // CodeJam.FallingDiamonds.solve "fallingdiamonds-large-practice.in"
+
+
+// https://code.google.com/codejam/contest/2434486/dashboard#s=p2
+module GarbledEmail = 
+
+    open System.IO
+
+    let readDict() = 
+        let fn = "garbled_email_dictionary.txt" |> toPath
+        File.ReadAllLines(fn) |> List.ofArray
+
+
+    /// Try to match a string with a word with at least 5 between errors.
+    let rec matchWord s w i e = 
+        // i and e are the indices of the last character matched and the last error encountered
+        let pos = i + 1
+        match s, w with
+        | rest, [] -> 
+            Some(rest, i, e) // matched the whole word
+        | [], _ -> 
+            None // ran out of strings before word completed
+        | cs::rs, cw::rw when cs = cw ->
+            matchWord rs rw pos e // matched character
+        | _::rs, _::rw when pos - e >= 5 || e = 0 ->
+            matchWord rs rw pos pos // allowable mismatch
+        | _ -> 
+            None // to early mismatch
+
+
+    /// Enumerate all the possible matches using a dictionary.
+    let matchWords d s = 
+        // accumulate the matched words going through the dictionary
+        let rec loop ws s i e = seq {
+            for w in d do
+                match matchWord s w i e with
+                | Some([], _, _) -> 
+                    yield (w::ws) |> List.rev |> List.collect id
+                | Some(s', i', e') -> 
+                    yield! loop (w::ws) s' i' e'
+                | None -> 
+                    ()
+        }
+        loop [] s 0 0
+    
+    let toChars s = s |> List.ofSeq
+
+    /// Count the number of characters two lists differ by
+    let dist s1 s2 = 
+        List.zip s1 s2 |> List.fold (fun d (a,b) -> if a = b then d else d+1) 0
+
+    /// Find the best match
+    let minDist d s = 
+        let replacements = dist s
+        matchWords d s
+        |> Seq.map replacements
+        |> Seq.min
+
+
+    let test() = 
+        let d = ["code"; "jam"] |> List.map toChars |> Set.ofList
+
+        assertEqual (matchWord (toChars "dodejbm") (toChars "code") 0 0) (Some (['j'; 'b'; 'm'], 4, 1)) "matchWord"
+        assertEqual (matchWord (toChars "dam") (toChars "jam") 4 1) None "matchWord"
+
+        let orig = ['c'; 'o'; 'd'; 'e'; 'j'; 'a'; 'm']
+        assertEqual (matchWords d (toChars "dodejbm") |> List.ofSeq) [orig] "matchWords"
+        assertEqual (matchWords d (toChars "zodejan") |> List.ofSeq) [orig] "matchWords"
+        assertEqual (matchWords d (toChars "cidejab") |> List.ofSeq) [orig] "matchWords"
+        assertEqual (matchWords d (toChars "kodezam") |> List.ofSeq) [] "matchWords"
+
+
+    let solve fn = 
+        let d = readDict() |> List.map toChars
+        solveFile fn <| fun line ->
+            let S = line |> toChars          
+            minDist d S |> string
+
+    
