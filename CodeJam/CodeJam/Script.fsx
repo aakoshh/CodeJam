@@ -8,9 +8,8 @@ fsi.AddPrinter (fun (x: bigint) -> sprintf "%AI" x)
 
 open CodeJam.Utils
          
-CodeJam.FallingDiamonds.solve "fallingdiamonds-sample-practice.in"
-CodeJam.FallingDiamonds.solve "fallingdiamonds-small-practice.in"
-CodeJam.FallingDiamonds.solve "fallingdiamonds-large-practice.in"
+CodeJam.GarbledEmail.solve "garbledemail-sample-practice.in"
+CodeJam.GarbledEmail.solve "garbledemail-small-practice.in"
 
 
 
